@@ -1,38 +1,23 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.DTOs.CommentDTOs;
+using backend.Models;
 
-namespace backend.Models
+namespace backend.DTOs.ProductDTOs
 {
-    public class Product
+    public class ProductDTO
     {
         public int Id { get; set; }
-
-        [Required]
-        [MaxLength(200)]
         public string Name { get; set; } = string.Empty;
-
-        [Required]
-        [Range(0, double.MaxValue, ErrorMessage = "Price must be a positive number")]
         public decimal Price { get; set; }
-
         public string Description { get; set; } = string.Empty;
-        [MaxLength(100)]
         public string Manufacturer { get; set; } = string.Empty;
-        [MaxLength(50)]
         public string Volume { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
-
         public int CategoryId { get; set; }
-        public Category Category { get; set; } = null!;
-
-        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
-
         public int StockQuantity { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        
+        public ICollection<CommentDTO> Comments { get; set; } = new List<CommentDTO>();
     }
 }

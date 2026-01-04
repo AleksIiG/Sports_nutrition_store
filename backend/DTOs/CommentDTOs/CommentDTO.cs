@@ -1,0 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace backend.DTOs.CommentDTOs
+{
+    public class CommentDTO
+    {
+        public int Id { get; set; }
+        public int AuthorId { get; set; }
+        public string Content { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+    }
+}
