@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.DTOs.ProductDTOs;
 using backend.Mappers.ProductMappers;
 using backend.Models;
 using backend.Services.Interfaces;
@@ -29,13 +30,13 @@ namespace backend.Controllers
             return Ok(products.Select(p => p.ToProductDto()));
         }
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Product product)
+        public async Task<IActionResult> Create([FromBody] CreateProductDTO createProductDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
+            var product = createProductDTO.FromCreateToProductDto();
             try
             {
                 var model = await _productService.CreateProductAsync(product);
@@ -55,12 +56,19 @@ namespace backend.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null)
+            try
             {
-                return NotFound();
+                var product = await _productService.GetByIdAsync(id);
+                return Ok(product.ToProductDto());
             }
-            return Ok(product.ToProductDto());
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while retrieving the product.\n {ex.Message}" });
+            }
         }
 
         [HttpDelete("{id}")]
@@ -82,13 +90,13 @@ namespace backend.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Product product)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDTO updateProductDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
+            var product = updateProductDTO.FromUpdateToProductDto(id);
             try
             {
                 var updatedProduct = await _productService.UpdateProductAsync(product);
@@ -97,6 +105,10 @@ namespace backend.Controllers
             catch (InvalidOperationException ex)
             {
                 return Conflict(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {

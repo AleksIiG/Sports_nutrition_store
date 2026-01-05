@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,5 +12,6 @@ namespace backend.DTOs.CommentDTOs
         public int AuthorId { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public int ProductId { get; set; }
     }
 }

@@ -16,19 +16,31 @@ namespace backend.Services
         {
             _commentRepository = commentRepository;
         }
-        public Task<Comment> CreateCommentAsync(Comment comment)
+        public async Task<Comment> CreateCommentAsync(Comment comment)
         {
-            throw new NotImplementedException();
+            var existingComment = await _commentRepository.GetCommentByIdAsync(comment.Id);
+            if (existingComment != null)
+            {
+                throw new InvalidOperationException("Comment with the same id already exists.");
+            }
+            await _commentRepository.CreateCommentAsync(comment);
+            return comment;
         }
 
-        public Task<Comment> DeleteCommentAsync(Comment comment)
+        public async Task<Comment> DeleteCommentAsync(int id)
         {
-            throw new NotImplementedException();
+            var comment = await _commentRepository.GetCommentByIdAsync(id);
+            if (comment == null)
+            {
+                throw new KeyNotFoundException($"Comment with id {id} not found");
+            }
+            await _commentRepository.DeleteCommentAsync(comment);
+            return comment;
         }
 
-        public Task<IEnumerable<Comment>> GetAllCommentsAsync()
+        public async Task<IEnumerable<Comment>> GetAllCommentsAsync()
         {
-            var model = _commentRepository.GetAllCommentsAsync();
+            var model = await _commentRepository.GetAllCommentsAsync();
             if (model == null)
             {
                 throw new("Comments not found");
@@ -36,14 +48,28 @@ namespace backend.Services
             return model;
         }
 
-        public Task<Comment?> GetCommentByIdAsync(int id)
+        public async Task<Comment> GetCommentByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var model = await _commentRepository.GetCommentByIdAsync(id);
+            if (model == null)
+            {
+                throw new KeyNotFoundException($"Comment with id {id} not found");
+            }
+            return model;
         }
 
-        public Task<Comment> UpdateCommentAsync(Comment comment)
+        public async Task<Comment> UpdateCommentAsync(Comment comment)
         {
-            throw new NotImplementedException();
+            var existingComment = await _commentRepository.GetCommentByIdAsync(comment.Id);
+            if (existingComment == null)
+            {
+                throw new KeyNotFoundException("Comment not found.");
+            }
+
+            existingComment.Content = comment.Content;
+
+            await _commentRepository.UpdateCommentAsync(existingComment);
+            return existingComment;
         }
     }
 }

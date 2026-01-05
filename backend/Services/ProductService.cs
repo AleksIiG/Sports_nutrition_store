@@ -37,7 +37,7 @@ namespace backend.Services
             return productModel;
         }
 
-        public async Task<Product?> GetByIdAsync(int id)
+        public async Task<Product> GetByIdAsync(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)

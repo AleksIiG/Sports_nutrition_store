@@ -26,5 +26,38 @@ namespace backend.Mappers.ProductMappers
                 Comments = product.Comments.Select(c => c.ToCommentDto()).ToList()
             };
         }
+
+
+        public static Product FromUpdateToProductDto(this UpdateProductDTO dto, int id)
+        {
+            return new Product
+            {
+                Id = id,
+                Name = dto.Name,
+                Price = dto.Price,
+                Description = dto.Description,
+                Manufacturer = dto.Manufacturer,
+                Volume = dto.Volume,
+                ImageUrl = dto.ImageUrl,
+                CategoryId = dto.CategoryId,
+                StockQuantity = dto.StockQuantity
+            };
+        }
+
+        public static Product FromCreateToProductDto(this CreateProductDTO dto)
+        {
+            return new Product
+            {
+                Name = dto.Name,
+                Price = dto.Price,
+                Description = dto.Description,
+                Manufacturer = dto.Manufacturer,
+                Volume = dto.Volume,
+                ImageUrl = dto.ImageUrl,
+                CategoryId = dto.CategoryId,
+                StockQuantity = dto.StockQuantity
+            };
+        }
+
     }
 }

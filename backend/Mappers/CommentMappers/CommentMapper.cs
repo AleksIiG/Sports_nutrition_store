@@ -16,8 +16,29 @@ namespace backend.Mappers.CommentMappers
                 Id = comment.Id,
                 Content = comment.Content,
                 AuthorId = comment.AuthorId,
-                CreatedAt = comment.CreatedAt
+                CreatedAt = comment.CreatedAt,
+                ProductId = comment.ProductId
             };
         }
+
+        public static Comment FromUpdateToCommentDto(this UpdateCommentDTO dto, int id)
+        {
+            return new Comment
+            {
+                Id = id,
+                Content = dto.Content
+            };
+        }
+
+        public static Comment FromCreateToCommentDto(this CreateCommentDTO dto)
+        {
+            return new Comment
+            {
+                Content = dto.Content,
+                ProductId = dto.ProductId,
+                AuthorId = dto.AuthorId
+            };
+        }
+
     }
 }

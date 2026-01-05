@@ -16,14 +16,16 @@ namespace backend.Repositories
         {
             _context = context;
         }
-        public Task CreateCommentAsync(Comment comment)
+        public async Task CreateCommentAsync(Comment comment)
         {
-            throw new NotImplementedException();
+            await _context.Comments.AddAsync(comment);
+            await _context.SaveChangesAsync();
         }
 
-        public Task DeleteCommentAsync(Comment comment)
+        public async Task DeleteCommentAsync(Comment comment)
         {
-            throw new NotImplementedException();
+            _context.Comments.Remove(comment);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Comment>> GetAllCommentsAsync()
@@ -31,14 +33,20 @@ namespace backend.Repositories
             return await _context.Comments.ToListAsync();
         }
 
-        public Task<Comment?> GetCommentByIdAsync(int id)
+        public async Task<Comment?> GetCommentByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _context.Comments.FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public Task UpdateCommentAsync(Comment comment)
+        public async Task UpdateCommentAsync(Comment comment)
         {
-            throw new NotImplementedException();
+            var existingComment = await _context.Comments.FindAsync(comment.Id);
+            if (existingComment == null)
+            {
+                throw new KeyNotFoundException("Comment not found.");
+            }
+            _context.Entry(existingComment).CurrentValues.SetValues(comment);
+            await _context.SaveChangesAsync();
         }
     }
 }

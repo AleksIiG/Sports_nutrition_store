@@ -37,7 +37,12 @@ namespace backend.Repositories
 
         public async Task UpdateProductAsync(Product product)
         {
-            _context.Products.Update(product);
+            var existingProduct = await _context.Products.FindAsync(product.Id);
+            if (existingProduct == null)
+            {
+                throw new KeyNotFoundException("Product not found.");
+            }
+            _context.Entry(existingProduct).CurrentValues.SetValues(product);
             await _context.SaveChangesAsync();
         }
 
