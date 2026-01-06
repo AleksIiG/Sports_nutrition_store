@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace backend.Models
+namespace backend.DTOs.CategoriesDTOs
 {
-    public class Category
+    public class CategoryDTO
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-
     }
 }

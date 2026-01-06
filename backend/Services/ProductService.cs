@@ -55,8 +55,13 @@ namespace backend.Services
 
         public async Task<Product> UpdateProductAsync(Product product)
         {
-            var existingProduct = await _productRepository.GetByNameAsync(product.Name);
-            if (existingProduct != null && existingProduct.Id != product.Id)
+            var existingProduct = await _productRepository.GetByIdAsync(product.Id);
+            if (existingProduct == null)
+            {
+                throw new KeyNotFoundException("Product not found.");
+            }
+            var existingProductByName = await _productRepository.GetByNameAsync(product.Name);
+            if(existingProductByName != null && existingProductByName.Id != product.Id)
             {
                 throw new InvalidOperationException("Another product with the same name already exists.");
             }
