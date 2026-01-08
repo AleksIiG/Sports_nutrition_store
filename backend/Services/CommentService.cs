@@ -12,16 +12,18 @@ namespace backend.Services
     public class CommentService : ICommentService
     {
         private readonly ICommentRepository _commentRepository;
-        public CommentService(ICommentRepository commentRepository)
+        private readonly IProductRepository _productRepository;
+        public CommentService(ICommentRepository commentRepository, IProductRepository productRepository)
         {
             _commentRepository = commentRepository;
+            _productRepository = productRepository;
         }
         public async Task<Comment> CreateCommentAsync(Comment comment)
         {
-            var existingComment = await _commentRepository.GetCommentByIdAsync(comment.Id);
-            if (existingComment != null)
+            var productExists = await _productRepository.GetByIdAsync(comment.ProductId);
+            if(productExists == null)
             {
-                throw new InvalidOperationException("Comment with the same id already exists.");
+                throw new KeyNotFoundException($"Product with id {comment.ProductId} not exists");
             }
             await _commentRepository.CreateCommentAsync(comment);
             return comment;
@@ -41,10 +43,6 @@ namespace backend.Services
         public async Task<IEnumerable<Comment>> GetAllCommentsAsync()
         {
             var model = await _commentRepository.GetAllCommentsAsync();
-            if (model == null)
-            {
-                throw new("Comments not found");
-            }
             return model;
         }
 

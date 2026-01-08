@@ -10,7 +10,7 @@ namespace backend.Models
     {
         public int Id { get; set; }
         [Required]
-        public int AuthorId { get; set; }
+        public int UserId { get; set; }
         [Required]
         [MinLength(5, ErrorMessage = "Content must be at least 5 characters long")]
         [MaxLength(300)]

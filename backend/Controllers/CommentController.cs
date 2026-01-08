@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using backend.DTOs.CommentDTOs;
 using backend.Mappers.CommentMappers;
 using backend.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
@@ -84,19 +86,29 @@ namespace backend.Controllers
             }
         }
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] CreateCommentDTO createCommentDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User id not found in token" });
+            }
 
-            var comment = createCommentDTO.FromCreateToCommentDto();
+            var comment = createCommentDTO.FromCreateToCommentDto(Convert.ToInt32(userId));
 
             try
             {
                 var createdComment = await _commentService.CreateCommentAsync(comment);
                 return CreatedAtAction(nameof(GetCommentById), new { id = createdComment.Id }, createdComment.ToCommentDto());
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {

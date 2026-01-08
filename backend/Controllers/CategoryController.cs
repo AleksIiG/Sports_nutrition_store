@@ -97,7 +97,7 @@ namespace backend.Controllers
             try
             {
                 var deletedCategory = await _categoryService.DeleteCategoryAsync(id);
-                return Ok(deletedCategory.ToCategoryDTO());
+                return NoContent();
             }
             catch (KeyNotFoundException ex)
             {

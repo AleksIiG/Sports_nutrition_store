@@ -14,7 +14,5 @@ namespace backend.DTOs.CommentDTOs
         public string Content { get; set; } = string.Empty;
         [Required]
         public int ProductId { get; set; }
-        [Required]
-        public int AuthorId { get; set; }
     }
 }

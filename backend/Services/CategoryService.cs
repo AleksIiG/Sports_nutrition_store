@@ -17,14 +17,14 @@ namespace backend.Services
             _categoryRepository = categoryRepository;
         }
 
-        public Task<Category> CreateCategoryAsync(Category category)
+        public async Task<Category> CreateCategoryAsync(Category category)
         {
-            var existingCategory = _categoryRepository.GetCategoryByNameAsync(category.Name).Result;
+            var existingCategory = await _categoryRepository.GetCategoryByNameAsync(category.Name);
             if (existingCategory != null)
             {
                 throw new InvalidOperationException("Category with the same name already exists.");
             }
-            return _categoryRepository.CreateCategoryAsync(category);
+            return await _categoryRepository.CreateCategoryAsync(category);
         }
 
         public async Task<Category> DeleteCategoryAsync(int id)

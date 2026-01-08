@@ -122,7 +122,7 @@ namespace backend.Controllers
 
 
 /* TAsk
-Write a category controller and service in the same style as the product controller and service.
+DONE ---------------------Write a category controller and service in the same style as the product controller and service.
 Write a authentication controller and service in the same style as the product controller and service.
 
 Think about buying process and implement order controller 

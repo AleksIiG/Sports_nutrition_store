@@ -15,7 +15,7 @@ namespace backend.Mappers.CommentMappers
             {
                 Id = comment.Id,
                 Content = comment.Content,
-                AuthorId = comment.AuthorId,
+                UserId = comment.UserId,
                 CreatedAt = comment.CreatedAt,
                 ProductId = comment.ProductId
             };
@@ -30,13 +30,13 @@ namespace backend.Mappers.CommentMappers
             };
         }
 
-        public static Comment FromCreateToCommentDto(this CreateCommentDTO dto)
+        public static Comment FromCreateToCommentDto(this CreateCommentDTO dto, int userID)
         {
             return new Comment
             {
                 Content = dto.Content,
                 ProductId = dto.ProductId,
-                AuthorId = dto.AuthorId
+                UserId = userID
             };
         }
 

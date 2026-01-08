@@ -9,7 +9,7 @@ namespace backend.DTOs.CommentDTOs
     public class CommentDTO
     {
         public int Id { get; set; }
-        public int AuthorId { get; set; }
+        public int UserId { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public int ProductId { get; set; }
