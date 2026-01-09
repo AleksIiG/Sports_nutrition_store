@@ -13,6 +13,7 @@ namespace backend.Services.Interfaces
         public Task<List<string>> LoginUserAsync(LoginDTO user);
         public Task LogoutUserAsync(string refreshToken);
         public Task<List<string>> RefreshTokenAsync(string refreshToken);
-        public Task<User> GetUserByIdAsync(string userId);
+        public Task<User> GetUserByIdAsync(int userId);
+        public Task<User> ChangeRoleToAdmin(int id);
     }
 }

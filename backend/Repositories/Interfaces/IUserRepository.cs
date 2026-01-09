@@ -13,7 +13,7 @@ namespace backend.Repositories.Interfaces
         public Task<User?> GetUserByEmailAsync(string email);
         public Task UpdateUserAsync(User user);
         public Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
-        public Task<User?> GetUserByIdAsync(string userId);
+        public Task<User?> GetUserByIdAsync(int userId);
 
     }
 }

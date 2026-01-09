@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using backend.DTOs.CategoriesDTOs;
 using backend.Mappers.CategoriesMappers;
 using backend.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -43,6 +44,7 @@ namespace backend.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateCategoryDTO createCategoryDto)
         {
             if (!ModelState.IsValid)
@@ -63,6 +65,7 @@ namespace backend.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateCategoryDTO updateCategoryDTO)
         {
             if (!ModelState.IsValid)
@@ -92,6 +95,7 @@ namespace backend.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             try

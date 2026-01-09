@@ -138,7 +138,7 @@ namespace backend.Controllers
 
             try
             {
-                var user = await _authService.GetUserByIdAsync(userId);
+                var user = await _authService.GetUserByIdAsync(Convert.ToInt32(userId));
                 return Ok(user.ToUserDTO());
             }
             catch (KeyNotFoundException ex)
@@ -148,6 +148,25 @@ namespace backend.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = $"An error occurred while retrieving the user.\n {ex.Message}" });
+            }
+        }
+
+        [HttpPost("promote/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ChangeRoleToAdmin([FromRoute] int id)
+        {
+            try
+            {
+                var model = await _authService.ChangeRoleToAdmin(id);
+                return Ok(model.ToUserDTO());
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while promoting the user.\n {ex.Message}" });
             }
         }
 

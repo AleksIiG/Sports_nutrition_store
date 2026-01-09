@@ -97,7 +97,7 @@ namespace backend.Services
             };
         }
 
-        public async Task<User> GetUserByIdAsync(string userId)
+        public async Task<User> GetUserByIdAsync(int userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null)
@@ -106,6 +106,16 @@ namespace backend.Services
             }
             return user;
 
+        }
+
+        public async Task<User> ChangeRoleToAdmin(int id)
+        {
+            var model = await _userRepository.GetUserByIdAsync(id);
+            if (model == null)
+                throw new KeyNotFoundException($"User with id {id} not found");
+            model.Role = "Admin";
+            await _userRepository.UpdateUserAsync(model);
+            return model;
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using backend.DTOs.CommentDTOs;
@@ -22,12 +23,14 @@ namespace backend.Controllers
             _commentService = commentService;
         }
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllComments()
         {
             var comments = await _commentService.GetAllCommentsAsync();
             return Ok(comments.Select(c => c.ToCommentDto()));
         }
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetCommentById(int id)
         {
             try
@@ -45,6 +48,7 @@ namespace backend.Controllers
             }
         }
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -62,6 +66,7 @@ namespace backend.Controllers
             }
         }
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateCommentDTO updateCommentDTO)
         {
             if (!ModelState.IsValid)

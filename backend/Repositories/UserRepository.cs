@@ -29,9 +29,9 @@ namespace backend.Repositories
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public Task<User?> GetUserByIdAsync(string userId)
+        public Task<User?> GetUserByIdAsync(int userId)
         {
-            return _context.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+            return _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
@@ -46,7 +46,12 @@ namespace backend.Repositories
 
         public async Task UpdateUserAsync(User user)
         {
-            _context.Users.Update(user);
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == user.Id);
+            if (existingUser == null)
+            {
+                throw new KeyNotFoundException($"User with id {user.Id} not found");
+            }
+            _context.Entry(existingUser).CurrentValues.SetValues(user);
             await _context.SaveChangesAsync();
         }
     }

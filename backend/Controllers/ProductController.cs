@@ -7,6 +7,7 @@ using backend.Mappers.ProductMappers;
 using backend.Models;
 using backend.Services.Interfaces;
 using Backend.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,7 @@ namespace backend.Controllers
             return Ok(products.Select(p => p.ToProductDto()));
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateProductDTO createProductDTO)
         {
             if (!ModelState.IsValid)
@@ -72,6 +74,7 @@ namespace backend.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -90,6 +93,7 @@ namespace backend.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDTO updateProductDTO)
         {
             if (!ModelState.IsValid)
@@ -123,7 +127,7 @@ namespace backend.Controllers
 
 /* TAsk
 DONE ---------------------Write a category controller and service in the same style as the product controller and service.
-Write a authentication controller and service in the same style as the product controller and service.
+DONE ---------------------Write a authentication controller and service in the same style as the product controller and service.
 
 Think about buying process and implement order controller 
 and service in the same style as the product controller and service.

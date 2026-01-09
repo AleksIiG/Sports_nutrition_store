@@ -16,11 +16,11 @@ namespace backend.Repositories
         {
             _context = context;
         }
-        public async Task<Category> CreateCategoryAsync(Category category)
+        public async Task CreateCategoryAsync(Category category)
         {
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
-            return category;
+
         }
 
         public async Task DeleteCategoryAsync(int id)
@@ -44,7 +44,7 @@ namespace backend.Repositories
             return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public async Task<Category?> UpdateCategoryAsync(Category category)
+        public async Task UpdateCategoryAsync(Category category)
         {
             var existingCategory = await _context.Categories.FindAsync(category.Id);
             if (existingCategory == null)
@@ -53,7 +53,6 @@ namespace backend.Repositories
             }
             _context.Entry(existingCategory).CurrentValues.SetValues(category);
             await _context.SaveChangesAsync();
-            return existingCategory;
         }
 
         public async Task<Category?> GetCategoryByNameAsync(string name)

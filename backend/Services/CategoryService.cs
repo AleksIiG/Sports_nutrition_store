@@ -24,7 +24,8 @@ namespace backend.Services
             {
                 throw new InvalidOperationException("Category with the same name already exists.");
             }
-            return await _categoryRepository.CreateCategoryAsync(category);
+            await _categoryRepository.CreateCategoryAsync(category);
+            return category;
         }
 
         public async Task<Category> DeleteCategoryAsync(int id)
@@ -67,8 +68,8 @@ namespace backend.Services
                 throw new InvalidOperationException("Another category with the same name already exists.");
             }
 
-            var result = await _categoryRepository.UpdateCategoryAsync(category);
-            return result!;
+            await _categoryRepository.UpdateCategoryAsync(category);
+            return category;
         }
     }
 }
