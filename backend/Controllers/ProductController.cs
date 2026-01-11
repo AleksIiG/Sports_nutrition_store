@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using backend.DTOs.ProductDTOs;
+using backend.Helpers;
 using backend.Mappers.ProductMappers;
 using backend.Models;
 using backend.Services.Interfaces;
@@ -25,9 +26,9 @@ namespace backend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] QueryObjectForProducts query)
         {
-            var products = await _productService.GetProductsAsync();
+            var products = await _productService.GetProductsAsync(query);
             return Ok(products.Select(p => p.ToProductDto()));
         }
         [HttpPost]
@@ -56,6 +57,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("{id}")]
+        
         public async Task<IActionResult> GetById(int id)
         {
             try

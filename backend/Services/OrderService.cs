@@ -17,11 +17,13 @@ namespace backend.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IUserRepository _userRepository;
 
-        public OrderService(IOrderRepository orderRepository, IProductRepository productRepository)
+        public OrderService(IOrderRepository orderRepository, IProductRepository productRepository, IUserRepository userRepository)
         {
             _productRepository = productRepository;
             _orderRepository = orderRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<Order> ChangeStatusAsync(int id, OrderStatus orderStatus)
@@ -108,6 +110,50 @@ namespace backend.Services
             return model;
         }
 
+        public async Task<Order> UpdateOrderAsync(int userId, int id, UpdateOrderDTO updateOrderDTO)
+        {
+            var existingIOrder = await _orderRepository.GetOrderByIdAsync(id);
+            if (existingIOrder == null)
+            {
+                throw new KeyNotFoundException($"Order with id {id} not found");
+            }
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (existingIOrder.UserId != userId && user?.Role != "Admin")
+            {
+                throw new InvalidOperationException($"this order does not belong to the user with id {userId}");
+            }
 
+            existingIOrder.OrderItems.Clear();
+
+            decimal totalPrice = 0;
+            foreach (var item in updateOrderDTO.OrderItems)
+            {
+                if (item.Quantity <= 0)
+                {
+                    throw new InvalidOperationException("Quantity must be greater than zero.");
+                }
+                var product = await _productRepository.GetByIdAsync(item.ProductId);
+                if (product == null)
+                    throw new KeyNotFoundException($"Product with id {item.ProductId} not found.");
+
+                var orderItem = new OrderItem
+                {
+                    ProductId = product.Id,
+                    Quantity = item.Quantity,
+                    PriceAtPurchase = product.Price
+                };
+                existingIOrder.OrderItems.Add(orderItem);
+                totalPrice += product.Price * item.Quantity;
+            }
+
+            existingIOrder.TotalPrice = totalPrice;
+            existingIOrder.Id = id;
+
+            await _orderRepository.UpdateOrderAsync(existingIOrder);
+            return existingIOrder;
+
+
+
+        }
     }
 }

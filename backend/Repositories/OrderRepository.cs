@@ -45,13 +45,8 @@ namespace backend.Repositories
 
         public async Task UpdateOrderAsync(Order order)
         {
-            var existingOrder = await _context.Orders.FirstOrDefaultAsync(o => o.Id == order.Id);
-            if (existingOrder == null)
-            {
-                throw new KeyNotFoundException($"Order with id {order.Id} not found");
-            }
-            _context.Entry(existingOrder).CurrentValues.SetValues(order);
             await _context.SaveChangesAsync();
+
         }
     }
 }

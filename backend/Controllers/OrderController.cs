@@ -4,12 +4,15 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using backend.DTOs.OrderDTOs;
+using backend.Helpers;
 using backend.Mappers.OrderMapper;
 using backend.Services.Interfaces;
 using Backend.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Sprache;
 
 namespace backend.Controllers
 {
@@ -73,7 +76,7 @@ namespace backend.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] QueryObjectForProducts query)
         {
             try
             {
@@ -129,6 +132,49 @@ namespace backend.Controllers
             {
                 return Conflict(new { message = ex.Message });
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while changing status of orders.\n {ex.Message}" });
+            }
+        }
+
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateOrderDTO updateOrderDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _orderService.UpdateOrderAsync(int.Parse(userId), id, updateOrderDTO);
+                return Ok(result.ToOrderDTO());
+            }
+
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while Updating an orders.\n {ex.Message}" });
+            }
+
         }
     }
 

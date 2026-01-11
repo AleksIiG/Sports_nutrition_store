@@ -17,6 +17,7 @@ namespace backend.Services.Interfaces
         Task<Order> DeleteOrderAsync(int id);
         Task<Order> CreateOrderAsync(int userId, CreateOrderDTO createOrderDTO);
         Task<Order> ChangeStatusAsync(int id, OrderStatus orderStatus);
-        
+        Task<Order> UpdateOrderAsync(int userId, int id, UpdateOrderDTO updateOrderDTO);
+
     }
 }

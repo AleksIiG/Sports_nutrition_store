@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using backend.Helpers;
 using backend.Models;
 using backend.Repositories.Interfaces;
 using Backend.Data;
@@ -19,9 +20,24 @@ namespace backend.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        public async Task<IEnumerable<Product>> GetAllProductsAsync(QueryObjectForProducts query)
         {
-            return await _context.Products.Include(p => p.Comments).ToListAsync();
+            IQueryable<Product> products = _context.Products
+                .Include(p => p.Comments)
+                .Include(p => p.Category);
+
+            if (!string.IsNullOrWhiteSpace(query.Name))
+            {
+                products = products.Where(p =>
+                    p.Name.ToLower().Contains(query.Name.ToLower()));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.Category))
+            {
+                products = products.Where(p =>
+                    p.Category.Name.ToLower() == query.Category.ToLower());
+            }
+            return await products.ToListAsync();
         }
 
         public async Task<Product?> GetByIdAsync(int id)

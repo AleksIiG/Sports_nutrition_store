@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Helpers;
 using backend.Models;
 using backend.Repositories.Interfaces;
 using backend.Services.Interfaces;
@@ -47,9 +48,9 @@ namespace backend.Services
             return product;
         }
 
-        public async Task<IEnumerable<Product>> GetProductsAsync()
+        public async Task<IEnumerable<Product>> GetProductsAsync(QueryObjectForProducts query)
         {
-            var products = await _productRepository.GetAllProductsAsync();
+            var products = await _productRepository.GetAllProductsAsync(query);
             return products;
         }
 
@@ -61,7 +62,7 @@ namespace backend.Services
                 throw new KeyNotFoundException("Product not found.");
             }
             var existingProductByName = await _productRepository.GetByNameAsync(product.Name);
-            if(existingProductByName != null && existingProductByName.Id != product.Id)
+            if (existingProductByName != null && existingProductByName.Id != product.Id)
             {
                 throw new InvalidOperationException("Another product with the same name already exists.");
             }
