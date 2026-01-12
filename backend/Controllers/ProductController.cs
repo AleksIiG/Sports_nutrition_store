@@ -43,7 +43,7 @@ namespace backend.Controllers
             try
             {
                 var model = await _productService.CreateProductAsync(product);
-                return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+                return CreatedAtAction(nameof(GetById), new { id = model.Id }, model.ToProductDto());
             }
 
             catch (InvalidOperationException ex)
@@ -57,7 +57,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("{id}")]
-        
+
         public async Task<IActionResult> GetById(int id)
         {
             try

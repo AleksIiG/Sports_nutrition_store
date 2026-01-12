@@ -81,7 +81,6 @@ namespace backend.Controllers
         }
 
         [HttpPost("logout")]
-        [Authorize]
         public async Task<IActionResult> Logout([FromBody] LogoutDTO logoutDTO)
         {
             if (string.IsNullOrEmpty(logoutDTO.RefreshToken))
