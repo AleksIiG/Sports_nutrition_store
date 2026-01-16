@@ -63,8 +63,27 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     )
 );
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy
+                .WithOrigins("http://localhost:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
+
 var app = builder.Build();
+app.UseRouting();
+app.UseCors("AllowFrontend");
 app.UseStaticFiles();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
