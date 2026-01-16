@@ -33,13 +33,30 @@ namespace backend.Controllers
         }
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([FromBody] CreateProductDTO createProductDTO)
+        public async Task<IActionResult> Create([FromForm] CreateProductDTO createProductDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            var imageUrl = string.Empty;
+
+            if(createProductDTO.Image != null)
+            {
+                var uploadsFolder = Path.Combine("wwwroot", "images", "products");
+                Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(createProductDTO.Image.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await createProductDTO.Image.CopyToAsync(stream);
+
+                imageUrl = $"/images/products/{fileName}";
+            }
+
             var product = createProductDTO.FromCreateToProductDto();
+            product.ImageUrl = imageUrl;
             try
             {
                 var model = await _productService.CreateProductAsync(product);
