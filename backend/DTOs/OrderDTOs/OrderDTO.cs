@@ -15,5 +15,6 @@ namespace backend.DTOs.OrderDTOs
         public List<OrderItemResponseDTO> Items { get; set; } = [];
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public OrderStatus Status { get; set; }
+        public int UserId { get; set; }
     }
 }

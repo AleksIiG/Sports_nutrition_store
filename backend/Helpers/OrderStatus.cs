@@ -4,6 +4,8 @@ namespace backend.Helpers
     {
         Pending,
         Paid,
-        Cancelled
+        Cancelled,
+        Shipped,
+        Delivered
     }
 }

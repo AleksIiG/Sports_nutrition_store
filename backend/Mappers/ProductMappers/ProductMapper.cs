@@ -38,7 +38,6 @@ namespace backend.Mappers.ProductMappers
                 Description = dto.Description,
                 Manufacturer = dto.Manufacturer,
                 Volume = dto.Volume,
-                ImageUrl = dto.ImageUrl,
                 CategoryId = dto.CategoryId,
                 StockQuantity = dto.StockQuantity
             };

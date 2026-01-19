@@ -109,7 +109,7 @@ namespace backend.Controllers
             }
         }
 
-        [HttpPost("change-status/{id}")]
+        [HttpPatch("change-status/{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ChangeStatus([FromRoute] int id, [FromBody] ChangeStatusDTO statusDTO)
         {
@@ -175,6 +175,26 @@ namespace backend.Controllers
                 return StatusCode(500, new { message = $"An error occurred while Updating an orders.\n {ex.Message}" });
             }
 
+        }
+        [HttpGet("my-orders")]
+        [Authorize]
+        public async Task<IActionResult> GetMyOrders()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var orders = await _orderService.GetOrdersByUserIdAsync(int.Parse(userId));
+                return Ok(orders.Select(o => o.ToOrderDTO()));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while retrieving your orders.\n {ex.Message}" });
+            }
         }
     }
 

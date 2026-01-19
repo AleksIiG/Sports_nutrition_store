@@ -43,6 +43,15 @@ namespace backend.Repositories
             return await _context.Orders.Include(o => o.OrderItems).FirstOrDefaultAsync(o => o.Id == id);
         }
 
+        public async Task<ICollection<Order>> GetOrdersByUserIdAsync(int userId)
+        {
+            return await _context.Orders
+                .Where(o => o.UserId == userId)
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+                .ToListAsync();
+        }
+
         public async Task UpdateOrderAsync(Order order)
         {
             await _context.SaveChangesAsync();

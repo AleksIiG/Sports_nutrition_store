@@ -58,7 +58,17 @@ namespace backend.Repositories
             {
                 throw new KeyNotFoundException("Product not found.");
             }
+
+            // Копіюємо всі значення
             _context.Entry(existingProduct).CurrentValues.SetValues(product);
+
+            // ПЕРЕВІРКА: Якщо в новому об'єкті ImageUrl порожній, 
+            // повертаємо старе значення назад або просто помічаємо поле як "не змінене"
+            if (string.IsNullOrEmpty(product.ImageUrl))
+            {
+                _context.Entry(existingProduct).Property(p => p.ImageUrl).IsModified = false;
+            }
+
             await _context.SaveChangesAsync();
         }
 

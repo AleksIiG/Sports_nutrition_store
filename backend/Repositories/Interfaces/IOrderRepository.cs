@@ -13,5 +13,6 @@ namespace backend.Repositories.Interfaces
         Task CreateOrderAsync(Order order);
         Task DeleteOrderAsync(int id);
         Task UpdateOrderAsync(Order order);
+        Task<ICollection<Order>> GetOrdersByUserIdAsync(int userId);
     }
 }

@@ -113,13 +113,34 @@ namespace backend.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDTO updateProductDTO)
+        public async Task<IActionResult> Update(int id, [FromForm] UpdateProductDTO updateProductDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            var imageUrl = string.Empty;
+
+            if(updateProductDTO.Image != null)
+            {
+                var uploadsFolder = Path.Combine("wwwroot", "images", "products");
+                Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(updateProductDTO.Image.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await updateProductDTO.Image.CopyToAsync(stream);
+                imageUrl = $"/images/products/{fileName}";
+                
+            }
+
             var product = updateProductDTO.FromUpdateToProductDto(id);
+            if (!string.IsNullOrEmpty(imageUrl))
+            {
+                product.ImageUrl = imageUrl;
+            }
+
             try
             {
                 var updatedProduct = await _productService.UpdateProductAsync(product);

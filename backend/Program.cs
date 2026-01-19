@@ -8,16 +8,21 @@ using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 
+
+// ... всі твої using залишаються ...
 
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. Конфігурація
 builder.Configuration
-    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // appsettings
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+// 2. Реєстрація сервісів
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
@@ -29,10 +34,14 @@ builder.Services.AddScoped<IAuthentificationService, AuthentificationService>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IJWTService, JWTService>();
-builder.Services.AddControllers();
+
+builder.Services.AddControllers()
+.AddJsonOptions(options => {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    }); 
 builder.Services.AddEndpointsApiExplorer();
 
+// 3. Автентифікація
 builder.Services
     .AddAuthentication(options =>
     {
@@ -47,7 +56,6 @@ builder.Services
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-
             ValidIssuer = builder.Configuration["JWT_ISSUER"],
             ValidAudience = builder.Configuration["JWT_AUDIENCE"],
             IssuerSigningKey = new SymmetricSecurityKey(
@@ -56,29 +64,30 @@ builder.Services
         };
     });
 
-
+// 4. БД
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+// 5. CORS (ЗАЛИШАЄМО ТІЛЬКИ ТУТ)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy
-                .WithOrigins("http://localhost:5173")
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        });
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
 });
 
+// --- ТОЧКА ЗБОРКИ ---
+var app = builder.Build(); 
 
-var app = builder.Build();
+// --- ПІСЛЯ ЦЬОГО РЯДКА builder.Services ВИКОРИСТОВУВАТИ НЕ МОЖНА ---
+
+// 6. Middleware
 app.UseRouting();
-app.UseCors("AllowFrontend");
+app.UseCors("AllowAll"); // Використовуємо правильну назву політики
 app.UseStaticFiles();
 
 app.UseAuthentication();

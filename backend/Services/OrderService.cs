@@ -30,13 +30,35 @@ namespace backend.Services
         {
             var order = await _orderRepository.GetOrderByIdAsync(id);
             if (order == null)
-                throw new KeyNotFoundException($"Order with id {id} not found.");
-
-            if (order.Status == OrderStatus.Paid || order.Status == OrderStatus.Cancelled)
-                throw new InvalidOperationException("Cannot change status of completed or cancelled order.");
-
+            {
+                throw new KeyNotFoundException($"Order with id {id} not found");
+            }
             order.Status = orderStatus;
             await _orderRepository.UpdateOrderAsync(order);
+            if(order.Status == OrderStatus.Paid)
+            {
+                foreach(var item in order.OrderItems)
+                {
+                    var product =  await _productRepository.GetByIdAsync(item.ProductId);
+                    if(product != null)
+                    {
+                        product.StockQuantity -= item.Quantity;
+                        await _productRepository.UpdateProductAsync(product);
+                    }
+                }
+            }
+            if(order.Status == OrderStatus.Cancelled)
+            {
+                foreach(var item in order.OrderItems)
+                {
+                    var product =  await _productRepository.GetByIdAsync(item.ProductId);
+                    if(product != null)
+                    {
+                        product.StockQuantity += item.Quantity;
+                        await _productRepository.UpdateProductAsync(product);
+                    }
+                }
+            }
             return order;
 
         }
@@ -53,7 +75,8 @@ namespace backend.Services
             var order = new Order
             {
                 UserId = userId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Status = OrderStatus.Paid,
             };
 
             decimal totalPrice = 0;
@@ -76,6 +99,8 @@ namespace backend.Services
                 };
                 order.OrderItems.Add(orderItem);
                 totalPrice += product.Price * item.Quantity;
+                product.StockQuantity -= item.Quantity;
+                await _productRepository.UpdateProductAsync(product);
             }
 
             order.TotalPrice = totalPrice;
@@ -108,6 +133,11 @@ namespace backend.Services
                 throw new KeyNotFoundException($"Order with id {id} not found");
             }
             return model;
+        }
+
+        public async Task<ICollection<Order>> GetOrdersByUserIdAsync(int userId)
+        {
+            return await _orderRepository.GetOrdersByUserIdAsync(userId);
         }
 
         public async Task<Order> UpdateOrderAsync(int userId, int id, UpdateOrderDTO updateOrderDTO)

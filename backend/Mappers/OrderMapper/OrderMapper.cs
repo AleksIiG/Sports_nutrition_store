@@ -22,7 +22,8 @@ namespace backend.Mappers.OrderMapper
                     ProductId = i.ProductId,
                     Quantity = i.Quantity,
                     PriceAtPurchase = i.PriceAtPurchase
-                }).ToList()
+                }).ToList(),
+                UserId = order.UserId
             };
 
         }
