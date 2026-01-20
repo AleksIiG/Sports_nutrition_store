@@ -680,3 +680,5 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+
+// Admin sasha@gmail.com / sasha1234
