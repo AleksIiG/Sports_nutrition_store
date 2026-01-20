@@ -34,6 +34,7 @@ builder.Services.AddScoped<IAuthentificationService, AuthentificationService>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddControllers()
 .AddJsonOptions(options => {

@@ -12,9 +12,11 @@ namespace backend.Services
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
-        public ProductService(IProductRepository productRepository)
+        private readonly IImageService _imageService;
+        public ProductService(IProductRepository productRepository, IImageService imageService)
         {
             _productRepository = productRepository;
+            _imageService = imageService;
         }
         public async Task<Product> CreateProductAsync(Product product)
         {
@@ -35,6 +37,7 @@ namespace backend.Services
                 throw new KeyNotFoundException("Product not found.");
             }
             await _productRepository.DeleteProductAsync(productModel);
+            await _imageService.ClearDontUsedImagesAsync();
             return productModel;
         }
 
@@ -67,6 +70,7 @@ namespace backend.Services
                 throw new InvalidOperationException("Another product with the same name already exists.");
             }
             await _productRepository.UpdateProductAsync(product);
+            await _imageService.ClearDontUsedImagesAsync();
             return product;
         }
     }
