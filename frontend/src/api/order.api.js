@@ -16,7 +16,6 @@ export const updateOrderStatus = async (id, status) => {
   const response = await api.patch(`/orders/change-status/${id}`, {
     status: status,
   });
-
   return response.data;
 };
 

@@ -75,15 +75,20 @@ const AdminPanel = () => {
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
     try {
+      // .NET DTO часто очікує Name з великої літери в JSON
+      const payload = { Name: catFormData.name };
+
       if (editingCategory) {
-        await updateCategory(editingCategory.id, catFormData);
+        await updateCategory(editingCategory.id, payload);
       } else {
-        await createCategory(catFormData);
+        await createCategory(payload);
       }
       setIsCatModalOpen(false);
-      loadData(); // Оновлення списку без alert
+      loadData();
     } catch (err) {
-      console.error("Помилка при збереженні категорії", err);
+      console.error("Доступ заборонено або помилка:", err.response?.status);
+      if (err.response?.status === 403)
+        alert("У вас немає прав адміністратора!");
     }
   };
 
@@ -99,7 +104,6 @@ const AdminPanel = () => {
   const handleProductSubmit = async (e) => {
     e.preventDefault();
     setServerErrors([]);
-
     try {
       const data = new FormData();
       data.append("Name", formData.name);
@@ -107,30 +111,26 @@ const AdminPanel = () => {
       data.append("Manufacturer", formData.manufacturer);
       data.append("Volume", formData.volume);
 
-      const priceValue = formData.price.toString().replace(",", ".");
-      data.append("Price", priceValue);
+      // Перетворюємо ціну в число і крапку перед відправкою
+      const priceNum = parseFloat(formData.price.toString().replace(",", "."));
+      data.append("Price", priceNum);
+
       data.append("StockQuantity", parseInt(formData.stockQuantity) || 0);
       data.append("CategoryId", parseInt(formData.categoryId));
 
       if (editingProduct) {
-        if (editImageFile) {
-          data.append("Image", editImageFile);
-        }
+        if (editImageFile) data.append("Image", editImageFile);
         await updateProduct(editingProduct.id, data);
       } else {
-        if (imageFile) {
-          data.append("Image", imageFile);
-        }
+        if (imageFile) data.append("Image", imageFile);
         await createProduct(data);
       }
-
       setIsModalOpen(false);
-      loadData(); // Оновлення списку без alert
+      loadData();
     } catch (err) {
-      console.error("Помилка:", err.response?.data);
       const errors = err.response?.data?.errors
         ? Object.values(err.response.data.errors).flat()
-        : ["Сталася помилка при обробці ціни або полів"];
+        : ["Помилка доступу (403) або валідації"];
       setServerErrors(errors);
     }
   };
