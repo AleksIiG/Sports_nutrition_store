@@ -60,6 +60,9 @@ const AdminPanel = () => {
       setCategories(cData);
     } catch (err) {
       console.error("Error loading products/categories", err);
+      if (err.response?.status === 403) {
+        alert("Доступ заборонено (403). Перевірте роль користувача.");
+      }
     }
   };
 
@@ -72,10 +75,10 @@ const AdminPanel = () => {
     }
   };
 
+  // --- ЛОГІКА КАТЕГОРІЙ ---
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
     try {
-      // .NET DTO часто очікує Name з великої літери в JSON
       const payload = { Name: catFormData.name };
 
       if (editingCategory) {
@@ -86,12 +89,101 @@ const AdminPanel = () => {
       setIsCatModalOpen(false);
       loadData();
     } catch (err) {
-      console.error("Доступ заборонено або помилка:", err.response?.status);
+      console.error("Error saving category:", err);
       if (err.response?.status === 403)
         alert("У вас немає прав адміністратора!");
     }
   };
 
+  // --- ЛОГІКА ПРОДУКТІВ (ВИПРАВЛЕНО) ---
+
+  const handleProductSubmit = async (e) => {
+    e.preventDefault();
+    setServerErrors([]);
+
+    try {
+      const data = new FormData();
+      // Додаємо основні поля. Використовуємо PascalCase, як зазвичай очікує C#
+      data.append("Name", formData.name);
+      data.append("Description", formData.description);
+      data.append("Manufacturer", formData.manufacturer);
+      data.append("Volume", formData.volume);
+
+      // 1. Обробка ЦІНИ: заміна коми на крапку + захист від пустих значень
+      let priceVal = formData.price.toString().replace(",", ".");
+      if (!priceVal || isNaN(parseFloat(priceVal))) {
+        setServerErrors(["Некоректна ціна"]);
+        return;
+      }
+      data.append("Price", parseFloat(priceVal));
+
+      // 2. Обробка КІЛЬКОСТІ
+      data.append("StockQuantity", parseInt(formData.stockQuantity) || 0);
+
+      // 3. Обробка КАТЕГОРІЇ: перевірка на валідність ID
+      const catId = parseInt(formData.categoryId);
+      if (!catId || isNaN(catId)) {
+        setServerErrors(["Оберіть категорію!"]);
+        return;
+      }
+      data.append("CategoryId", catId);
+
+      // 4. Обробка ФОТО (Збереження старого або завантаження нового)
+      if (editingProduct) {
+        // Якщо редагуємо і вибрали НОВЕ фото -> додаємо його
+        if (editImageFile) {
+          data.append("Image", editImageFile);
+        }
+        // Якщо editImageFile === null, ми просто НЕ додаємо ключ "Image".
+        // Бекенд побачить null і залишить старий шлях (Url) без змін.
+
+        await updateProduct(editingProduct.id, data);
+      } else {
+        // Створення нового
+        if (imageFile) {
+          data.append("Image", imageFile);
+        }
+        await createProduct(data);
+      }
+
+      setIsModalOpen(false);
+      loadData(); // Оновлюємо таблицю
+    } catch (err) {
+      console.error("Error saving product:", err);
+      const status = err.response?.status;
+
+      if (status === 403) {
+        setServerErrors(["Доступ заборонено! У вас немає прав Адміна."]);
+      } else if (err.response?.data?.errors) {
+        // Витягуємо помилки валідації з бекенду
+        const errors = Object.values(err.response.data.errors).flat();
+        setServerErrors(errors);
+      } else {
+        setServerErrors(["Сталася помилка при збереженні товару."]);
+      }
+    }
+  };
+
+  // --- ВИДАЛЕННЯ ПРОДУКТУ (ВИПРАВЛЕНО) ---
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm("Ви точно хочете видалити цей товар?")) return;
+
+    try {
+      await deleteProduct(id);
+      loadData();
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      if (err.response?.status === 403) {
+        alert("Помилка 403: У вас немає прав на видалення.");
+      } else {
+        alert(
+          "Не вдалося видалити товар. Можливо, він використовується в замовленнях.",
+        );
+      }
+    }
+  };
+
+  // --- ФІЛЬТРАЦІЯ ---
   const filteredProducts = products.filter((p) => {
     const matchesName = p.name
       ?.toLowerCase()
@@ -101,44 +193,10 @@ const AdminPanel = () => {
     return matchesName && matchesCategory;
   });
 
-  const handleProductSubmit = async (e) => {
-    e.preventDefault();
-    setServerErrors([]);
-    try {
-      const data = new FormData();
-      data.append("Name", formData.name);
-      data.append("Description", formData.description);
-      data.append("Manufacturer", formData.manufacturer);
-      data.append("Volume", formData.volume);
-
-      // Перетворюємо ціну в число і крапку перед відправкою
-      const priceNum = parseFloat(formData.price.toString().replace(",", "."));
-      data.append("Price", priceNum);
-
-      data.append("StockQuantity", parseInt(formData.stockQuantity) || 0);
-      data.append("CategoryId", parseInt(formData.categoryId));
-
-      if (editingProduct) {
-        if (editImageFile) data.append("Image", editImageFile);
-        await updateProduct(editingProduct.id, data);
-      } else {
-        if (imageFile) data.append("Image", imageFile);
-        await createProduct(data);
-      }
-      setIsModalOpen(false);
-      loadData();
-    } catch (err) {
-      const errors = err.response?.data?.errors
-        ? Object.values(err.response.data.errors).flat()
-        : ["Помилка доступу (403) або валідації"];
-      setServerErrors(errors);
-    }
-  };
-
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await updateOrderStatus(orderId, newStatus);
-      await loadOrders(); // Оновлення списку без alert
+      await loadOrders();
     } catch (err) {
       console.error("Помилка при зміні статусу:", err);
     }
@@ -252,16 +310,15 @@ const AdminPanel = () => {
                         className="edit-btn"
                         onClick={() => {
                           setEditingProduct(p);
+                          // Заповнення форми даними
                           setFormData({
-                            name: p.name || p.Name || "",
-                            price: p.price || p.Price || "",
-                            description: p.description || p.Description || "",
-                            manufacturer:
-                              p.manufacturer || p.Manufacturer || "",
-                            volume: p.volume || p.Volume || "",
-                            stockQuantity:
-                              p.stockQuantity ?? p.StockQuantity ?? 0,
-                            categoryId: p.categoryId || p.CategoryId || "",
+                            name: p.name || "",
+                            price: p.price || "",
+                            description: p.description || "",
+                            manufacturer: p.manufacturer || "",
+                            volume: p.volume || "",
+                            stockQuantity: p.stockQuantity ?? 0,
+                            categoryId: p.categoryId || "",
                           });
                           setEditImageFile(null);
                           setServerErrors([]);
@@ -272,10 +329,7 @@ const AdminPanel = () => {
                       </button>
                       <button
                         className="delete-btn"
-                        onClick={() => {
-                          if (window.confirm("Видалити?"))
-                            deleteProduct(p.id).then(loadData);
-                        }}
+                        onClick={() => handleDeleteProduct(p.id)}
                       >
                         Delete
                       </button>
@@ -287,6 +341,7 @@ const AdminPanel = () => {
           </section>
         )}
 
+        {/* ... (Categories and Orders sections remain unchanged logic-wise but included for completeness if needed) ... */}
         {activeTab === "categories" && (
           <section>
             <div className="admin-header">
@@ -335,10 +390,15 @@ const AdminPanel = () => {
                         <button
                           className="delete-btn"
                           onClick={async () => {
-                            if (pCount > 0) return; // Можна додати тиху помилку в UI замість alert, але поки прибрано просто повідомлення
                             if (window.confirm("Видалити категорію?")) {
-                              await deleteCategory(c.id);
-                              loadData();
+                              try {
+                                await deleteCategory(c.id);
+                                loadData();
+                              } catch (e) {
+                                alert(
+                                  "Помилка видалення категорії (можливо, в ній є товари)",
+                                );
+                              }
                             }
                           }}
                         >
@@ -405,7 +465,11 @@ const AdminPanel = () => {
                         className="delete-btn"
                         onClick={() => {
                           if (window.confirm("Видалити?"))
-                            deleteOrder(o.id).then(loadOrders);
+                            deleteOrder(o.id)
+                              .then(loadOrders)
+                              .catch((e) =>
+                                alert("Помилка видалення замовлення"),
+                              );
                         }}
                       >
                         Delete
@@ -680,5 +744,3 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
-
-// Admin sasha@gmail.com / sasha1234

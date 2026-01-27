@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using backend.Helpers;
 using backend.Models;
 using backend.Repositories.Interfaces;
+using backend.Services.Cache;
 using backend.Services.Interfaces;
 
 namespace backend.Services
@@ -13,10 +14,12 @@ namespace backend.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly IImageService _imageService;
-        public ProductService(IProductRepository productRepository, IImageService imageService)
+        private readonly ICacheService _cacheService;
+        public ProductService(IProductRepository productRepository, IImageService imageService, ICacheService cacheService)
         {
             _productRepository = productRepository;
             _imageService = imageService;
+            _cacheService = cacheService;
         }
         public async Task<Product> CreateProductAsync(Product product)
         {
@@ -26,6 +29,7 @@ namespace backend.Services
                 throw new InvalidOperationException("Product with the same name already exists.");
             }
             await _productRepository.CreateProductAsync(product);
+            await _cacheService.RemoveByPrefixAsync("products");
             return product;
         }
 
@@ -37,23 +41,39 @@ namespace backend.Services
                 throw new KeyNotFoundException("Product not found.");
             }
             await _productRepository.DeleteProductAsync(productModel);
+            await _cacheService.RemoveAsync($"product:{id}");
+            await _cacheService.RemoveByPrefixAsync("products");
             await _imageService.ClearDontUsedImagesAsync();
             return productModel;
         }
 
         public async Task<Product> GetByIdAsync(int id)
         {
+            var cacheKey = $"product:{id}";
+            var cachedProduct = await _cacheService.GetAsync<Product>(cacheKey);
+            if (cachedProduct != null)
+                return cachedProduct;
+
+            
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
             {
                 throw new KeyNotFoundException("Product not found.");
             }
+            await _cacheService.SetAsync(cacheKey, product, TimeSpan.FromMinutes(10));
             return product;
         }
 
         public async Task<IEnumerable<Product>> GetProductsAsync(QueryObjectForProducts query)
         {
+            var cacheKey = $"products:{query.Name}:{query.Category}";
+            var cachedProducts = await _cacheService.GetAsync<IEnumerable<Product>>(cacheKey);
+            if (cachedProducts != null)
+                return cachedProducts;
+            
             var products = await _productRepository.GetAllProductsAsync(query);
+            await _cacheService.SetAsync(cacheKey, products, TimeSpan.FromMinutes(10));
+            
             return products;
         }
 
@@ -71,6 +91,8 @@ namespace backend.Services
             }
             await _productRepository.UpdateProductAsync(product);
             await _imageService.ClearDontUsedImagesAsync();
+            await _cacheService.RemoveByPrefixAsync("products");
+            await _cacheService.RemoveAsync($"product:{product.Id}");
             return product;
         }
     }

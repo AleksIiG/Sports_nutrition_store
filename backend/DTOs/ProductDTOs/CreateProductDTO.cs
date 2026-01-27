@@ -24,6 +24,7 @@ namespace backend.DTOs.ProductDTOs
         [MinLength(5, ErrorMessage = "Volume must be at least 5 characters long")]
         public string Volume { get; set; } = string.Empty;
         public IFormFile? Image { get; set; }
+        [Required]
         public int CategoryId { get; set; }
         [Required]
         [Range(1, double.MaxValue, ErrorMessage = "StockQuantity must be a positive number")]

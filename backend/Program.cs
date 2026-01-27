@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
+using StackExchange.Redis;
+using backend.Services.Cache;
 
 
 // ... всі твої using залишаються ...
@@ -35,6 +37,14 @@ builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var redisConnection = config.GetValue<string>("Redis:ConnectionString"); // читаємо ключ Redis:ConnectionString
+    return ConnectionMultiplexer.Connect(redisConnection + ",abortConnect=false");
+});
+
 
 builder.Services.AddControllers()
 .AddJsonOptions(options => {
