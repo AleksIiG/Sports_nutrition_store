@@ -31,6 +31,7 @@ namespace backend.Controllers
             var products = await _productService.GetProductsAsync(query);
             return Ok(products.Select(p => p.ToProductDto()));
         }
+
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromForm] CreateProductDTO createProductDTO)
@@ -74,7 +75,6 @@ namespace backend.Controllers
         }
 
         [HttpGet("{id}")]
-
         public async Task<IActionResult> GetById(int id)
         {
             try

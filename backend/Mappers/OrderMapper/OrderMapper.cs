@@ -23,7 +23,8 @@ namespace backend.Mappers.OrderMapper
                     Quantity = i.Quantity,
                     PriceAtPurchase = i.PriceAtPurchase
                 }).ToList(),
-                UserId = order.UserId
+                UserId = order.UserId,
+                ContactInfo = order.ContactInfo
             };
 
         }

@@ -15,5 +15,6 @@ namespace backend.Models
         public decimal TotalPrice { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
+        public string ContactInfo { get; set; } = string.Empty;
     }
 }

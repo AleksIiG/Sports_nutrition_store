@@ -16,5 +16,6 @@ namespace backend.DTOs.OrderDTOs
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public OrderStatus Status { get; set; }
         public int UserId { get; set; }
+        public string ContactInfo { get; set; } = string.Empty;
     }
 }

@@ -95,32 +95,26 @@ const AdminPanel = () => {
     }
   };
 
-  // --- ЛОГІКА ПРОДУКТІВ (ВИПРАВЛЕНО) ---
-
+  // --- ЛОГІКА ПРОДУКТІВ ---
   const handleProductSubmit = async (e) => {
     e.preventDefault();
     setServerErrors([]);
 
     try {
       const data = new FormData();
-      // Додаємо основні поля. Використовуємо PascalCase, як зазвичай очікує C#
       data.append("Name", formData.name);
       data.append("Description", formData.description);
       data.append("Manufacturer", formData.manufacturer);
       data.append("Volume", formData.volume);
 
-      // 1. Обробка ЦІНИ: заміна коми на крапку + захист від пустих значень
       let priceVal = formData.price.toString().replace(",", ".");
       if (!priceVal || isNaN(parseFloat(priceVal))) {
         setServerErrors(["Некоректна ціна"]);
         return;
       }
       data.append("Price", parseFloat(priceVal));
-
-      // 2. Обробка КІЛЬКОСТІ
       data.append("StockQuantity", parseInt(formData.stockQuantity) || 0);
 
-      // 3. Обробка КАТЕГОРІЇ: перевірка на валідність ID
       const catId = parseInt(formData.categoryId);
       if (!catId || isNaN(catId)) {
         setServerErrors(["Оберіть категорію!"]);
@@ -128,18 +122,12 @@ const AdminPanel = () => {
       }
       data.append("CategoryId", catId);
 
-      // 4. Обробка ФОТО (Збереження старого або завантаження нового)
       if (editingProduct) {
-        // Якщо редагуємо і вибрали НОВЕ фото -> додаємо його
         if (editImageFile) {
           data.append("Image", editImageFile);
         }
-        // Якщо editImageFile === null, ми просто НЕ додаємо ключ "Image".
-        // Бекенд побачить null і залишить старий шлях (Url) без змін.
-
         await updateProduct(editingProduct.id, data);
       } else {
-        // Створення нового
         if (imageFile) {
           data.append("Image", imageFile);
         }
@@ -147,15 +135,13 @@ const AdminPanel = () => {
       }
 
       setIsModalOpen(false);
-      loadData(); // Оновлюємо таблицю
+      loadData();
     } catch (err) {
       console.error("Error saving product:", err);
       const status = err.response?.status;
-
       if (status === 403) {
         setServerErrors(["Доступ заборонено! У вас немає прав Адміна."]);
       } else if (err.response?.data?.errors) {
-        // Витягуємо помилки валідації з бекенду
         const errors = Object.values(err.response.data.errors).flat();
         setServerErrors(errors);
       } else {
@@ -164,10 +150,8 @@ const AdminPanel = () => {
     }
   };
 
-  // --- ВИДАЛЕННЯ ПРОДУКТУ (ВИПРАВЛЕНО) ---
   const handleDeleteProduct = async (id) => {
     if (!window.confirm("Ви точно хочете видалити цей товар?")) return;
-
     try {
       await deleteProduct(id);
       loadData();
@@ -183,7 +167,6 @@ const AdminPanel = () => {
     }
   };
 
-  // --- ФІЛЬТРАЦІЯ ---
   const filteredProducts = products.filter((p) => {
     const matchesName = p.name
       ?.toLowerCase()
@@ -257,6 +240,7 @@ const AdminPanel = () => {
                 + Add Product
               </button>
             </div>
+            {/* Filters and Table for Products */}
             <div className="admin-filters">
               <input
                 type="text"
@@ -310,7 +294,6 @@ const AdminPanel = () => {
                         className="edit-btn"
                         onClick={() => {
                           setEditingProduct(p);
-                          // Заповнення форми даними
                           setFormData({
                             name: p.name || "",
                             price: p.price || "",
@@ -341,7 +324,6 @@ const AdminPanel = () => {
           </section>
         )}
 
-        {/* ... (Categories and Orders sections remain unchanged logic-wise but included for completeness if needed) ... */}
         {activeTab === "categories" && (
           <section>
             <div className="admin-header">
@@ -395,9 +377,7 @@ const AdminPanel = () => {
                                 await deleteCategory(c.id);
                                 loadData();
                               } catch (e) {
-                                alert(
-                                  "Помилка видалення категорії (можливо, в ній є товари)",
-                                );
+                                alert("Помилка видалення категорії");
                               }
                             }
                           }}
@@ -467,9 +447,7 @@ const AdminPanel = () => {
                           if (window.confirm("Видалити?"))
                             deleteOrder(o.id)
                               .then(loadOrders)
-                              .catch((e) =>
-                                alert("Помилка видалення замовлення"),
-                              );
+                              .catch(() => alert("Помилка видалення"));
                         }}
                       >
                         Delete
@@ -490,7 +468,6 @@ const AdminPanel = () => {
             <h3>
               {editingProduct ? "Редагувати товар" : "Додати новий товар"}
             </h3>
-
             {serverErrors.length > 0 && (
               <div
                 className="error-messages"
@@ -512,9 +489,8 @@ const AdminPanel = () => {
                 ))}
               </div>
             )}
-
             <form onSubmit={handleProductSubmit} className="admin-form">
-              <label>Назва товару (мін. 2 симв.)</label>
+              <label>Назва товару</label>
               <input
                 type="text"
                 value={formData.name}
@@ -522,9 +498,7 @@ const AdminPanel = () => {
                   setFormData({ ...formData, name: e.target.value })
                 }
                 required
-                placeholder="Наприклад: Whey Protein"
               />
-
               <div
                 className="form-row"
                 style={{ display: "flex", gap: "10px" }}
@@ -538,7 +512,6 @@ const AdminPanel = () => {
                       setFormData({ ...formData, manufacturer: e.target.value })
                     }
                     required
-                    placeholder="Optimum Nutrition"
                   />
                 </div>
                 <div style={{ flex: 1 }}>
@@ -550,11 +523,9 @@ const AdminPanel = () => {
                       setFormData({ ...formData, volume: e.target.value })
                     }
                     required
-                    placeholder="900g / 500ml"
                   />
                 </div>
               </div>
-
               <div
                 className="form-row"
                 style={{ display: "flex", gap: "10px" }}
@@ -572,7 +543,7 @@ const AdminPanel = () => {
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label>Кількість на складі</label>
+                  <label>Кількість</label>
                   <input
                     type="number"
                     value={formData.stockQuantity}
@@ -586,7 +557,6 @@ const AdminPanel = () => {
                   />
                 </div>
               </div>
-
               <label>Категорія</label>
               <select
                 value={formData.categoryId}
@@ -602,8 +572,7 @@ const AdminPanel = () => {
                   </option>
                 ))}
               </select>
-
-              <label>Опис (мін. 5 симв.)</label>
+              <label>Опис</label>
               <textarea
                 value={formData.description}
                 onChange={(e) =>
@@ -612,7 +581,6 @@ const AdminPanel = () => {
                 required
                 rows="4"
               />
-
               <label>
                 Зображення{" "}
                 {editingProduct && "(залиште порожнім, щоб не змінювати)"}
@@ -626,7 +594,6 @@ const AdminPanel = () => {
                     : setImageFile(e.target.files[0])
                 }
               />
-
               <div className="modal-actions">
                 <button type="submit" className="save-btn">
                   Зберегти товар
@@ -670,7 +637,7 @@ const AdminPanel = () => {
         </div>
       )}
 
-      {/* MODAL ORDER DETAILS */}
+      {/* MODAL ORDER DETAILS - МОДИФІКОВАНО */}
       {isOrderModalOpen && selectedOrder && (
         <div className="modal-overlay">
           <div className="modal-content order-details">
@@ -683,6 +650,24 @@ const AdminPanel = () => {
                 <strong>Дата:</strong>{" "}
                 {new Date(selectedOrder.createdAt).toLocaleString()}
               </p>
+              {/* Додана контактна інформація */}
+              <div
+                className="contact-info-block"
+                style={{
+                  marginTop: "10px",
+                  padding: "10px",
+                  backgroundColor: "#f9f9f9",
+                  borderLeft: "4px solid #0077ff",
+                  borderRadius: "4px",
+                }}
+              >
+                <p style={{ margin: 0 }}>
+                  <strong>Контактна інформація:</strong>
+                </p>
+                <p style={{ margin: "5px 0 0 0", whiteSpace: "pre-wrap" }}>
+                  {selectedOrder.contactInfo || "Не вказано"}
+                </p>
+              </div>
             </div>
             <hr />
             <table className="order-items-table">

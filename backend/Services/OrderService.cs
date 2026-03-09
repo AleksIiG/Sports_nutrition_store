@@ -76,7 +76,8 @@ namespace backend.Services
             {
                 UserId = userId,
                 CreatedAt = DateTime.UtcNow,
-                Status = OrderStatus.Paid,
+                Status = OrderStatus.Pending,
+                ContactInfo = createOrderDTO.ContactInfo
             };
 
             decimal totalPrice = 0;

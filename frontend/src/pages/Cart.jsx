@@ -6,6 +6,7 @@ import "../styles/main.css";
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
+  const [contactInfo, setContactInfo] = useState(""); // Стан для контактної інформації
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -47,18 +48,26 @@ function Cart() {
       return;
     }
 
+    // Перевірка, чи заповнене поле контактів
+    if (!contactInfo.trim()) {
+      alert("Будь ласка, введіть контактну інформацію (адресу, телефон тощо)");
+      return;
+    }
+
     try {
       const orderData = {
         orderItems: cartItems.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
         })),
+        contactInfo: contactInfo, // Додаємо контактну інформацію в DTO
       };
 
       await api.post("/orders", orderData);
 
       localStorage.removeItem("cart");
       setCartItems([]);
+      setContactInfo("");
       alert("Замовлення успішно створено!");
       navigate("/profile");
     } catch (err) {
@@ -143,6 +152,38 @@ function Cart() {
 
               <div className="cart-summary">
                 <h3>Підсумок</h3>
+
+                {/* Нове поле для контактної інформації */}
+                <div
+                  className="contact-info-section"
+                  style={{ marginBottom: "20px" }}
+                >
+                  <label
+                    htmlFor="contactInfo"
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Контактна інформація:
+                  </label>
+                  <textarea
+                    id="contactInfo"
+                    placeholder="Введіть адресу доставки та номер телефону"
+                    value={contactInfo}
+                    onChange={(e) => setContactInfo(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      minHeight: "80px",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                </div>
+
                 <div
                   className="summary-row"
                   style={{
@@ -164,7 +205,7 @@ function Cart() {
                   </span>
                 </div>
                 <button className="checkout-btn" onClick={handleCheckout}>
-                  Оплатити замовлення
+                  Оформити замовлення
                 </button>
               </div>
             </div>
