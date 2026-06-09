@@ -54,5 +54,28 @@ namespace backend.Repositories
             _context.Entry(existingUser).CurrentValues.SetValues(user);
             await _context.SaveChangesAsync();
         }
+
+        public async Task DeleteUserAsync(int id)
+        {
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (existingUser == null)
+            {
+                throw new KeyNotFoundException($"User with id {id} not found");
+            }
+            _context.Users.Remove(existingUser);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<ICollection<User>> GetAllUsersAsync(string? username)
+        {
+            var users = _context.Users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(username))
+            {
+                users = users.Where(u => u.Username.ToLower().Contains(username.ToLower()));
+            }
+
+            return await users.OrderByDescending(u => u.Id).ToListAsync();
+        }
     }
 }

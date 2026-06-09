@@ -169,6 +169,38 @@ namespace backend.Controllers
             }
         }
 
+        [HttpPost("demote/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ChangeRoleToUser([FromRoute] int id)
+        {
+            try
+            {
+                var model = await _authService.ChangeRoleToUser(id);
+                return Ok(model.ToUserDTO());
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while demoting the user.\n {ex.Message}" });
+            }
+        }
+        [HttpGet("users")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllUsers([FromQuery] string? username)
+        {
+            try
+            {
+                var users = await _authService.GetAllUsersAsync(username);
+                return Ok(users.Select(u => u.ToUserDTO()));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while retrieving users.\n {ex.Message}" });
+            }
+        }
 
     }
 }

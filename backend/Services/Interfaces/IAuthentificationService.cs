@@ -15,5 +15,9 @@ namespace backend.Services.Interfaces
         public Task<List<string>> RefreshTokenAsync(string refreshToken);
         public Task<User> GetUserByIdAsync(int userId);
         public Task<User> ChangeRoleToAdmin(int id);
+        public Task<User> ChangeRoleToUser(int id);
+
+        Task<ICollection<User>> GetAllUsersAsync(string? username);
+        
     }
 }

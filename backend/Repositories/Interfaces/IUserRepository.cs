@@ -14,6 +14,7 @@ namespace backend.Repositories.Interfaces
         public Task UpdateUserAsync(User user);
         public Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
         public Task<User?> GetUserByIdAsync(int userId);
+        Task<ICollection<User>> GetAllUsersAsync(string? username);
 
     }
 }

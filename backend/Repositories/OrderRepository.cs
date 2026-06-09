@@ -35,7 +35,11 @@ namespace backend.Repositories
 
         public async Task<ICollection<Order>> GetAllOrderAsync()
         {
-            return await _context.Orders.Include(o => o.OrderItems).ThenInclude(oi => oi.Product).ToListAsync();
+            return await _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+                .OrderByDescending(o => o.Id)
+                .ToListAsync();
         }
 
         public async Task<Order?> GetOrderByIdAsync(int id)

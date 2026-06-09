@@ -243,3 +243,50 @@
   padding: 8px 0;
   border-bottom: 1px solid #eee;
 }
+.role-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.role-admin {
+  background-color: #e8f4ff;
+  color: #0077ff;
+}
+
+.role-user {
+  background-color: #f1f1f1;
+  color: #555;
+}
+.user-link-btn {
+  background: none;
+  border: none;
+  color: #0077ff;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0;
+}
+
+.user-link-btn:hover {
+  text-decoration: underline;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.role-admin {
+  background-color: #e8f4ff;
+  color: #0077ff;
+}
+
+.role-user {
+  background-color: #f1f1f1;
+  color: #555;
+}

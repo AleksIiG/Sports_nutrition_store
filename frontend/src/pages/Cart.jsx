@@ -121,7 +121,7 @@ function Cart() {
                     />
                     <div className="cart-item-info">
                       <h4>{item.name}</h4>
-                      <p className="price">${item.price}</p>
+                      <p className="price">₴{item.price}</p>
                     </div>
 
                     <div className="custom-qty-selector">
@@ -201,7 +201,7 @@ function Cart() {
                       color: "#0077ff",
                     }}
                   >
-                    ${totalPrice.toFixed(2)}
+                    ₴{totalPrice.toFixed(2)}
                   </span>
                 </div>
                 <button className="checkout-btn" onClick={handleCheckout}>

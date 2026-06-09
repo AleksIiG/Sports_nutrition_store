@@ -75,11 +75,7 @@ namespace backend.Services
                 user.RefreshToken
 
             };
-
-
-
         }
-
         public async Task<List<string>> RefreshTokenAsync(string refreshToken)
         {
             var userByRefreshToken = await _userRepository.GetUserByRefreshTokenAsync(refreshToken);
@@ -116,6 +112,21 @@ namespace backend.Services
             model.Role = "Admin";
             await _userRepository.UpdateUserAsync(model);
             return model;
+        }
+
+        public async Task<User> ChangeRoleToUser(int id)
+        {
+            var model = await _userRepository.GetUserByIdAsync(id);
+            if (model == null)
+                throw new KeyNotFoundException($"User with id {id} not found");
+            model.Role = "User";
+            await _userRepository.UpdateUserAsync(model);
+            return model;
+        }
+
+        public async Task<ICollection<User>> GetAllUsersAsync(string? username)
+        {
+            return await _userRepository.GetAllUsersAsync(username);
         }
     }
 }

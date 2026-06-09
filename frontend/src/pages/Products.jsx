@@ -101,6 +101,30 @@ function Products() {
     const timer = setTimeout(fetchProducts, 300);
     return () => clearTimeout(timer);
   }, [search, activeCategory]);
+  const getCategoryName = (categoryId) => {
+    const category = categories.find(
+      (c) => c.id === categoryId || c.id === Number(categoryId),
+    );
+
+    return category ? category.name : "Без категорії";
+  };
+
+  const getProductRating = (product) => {
+    const comments = product.comments || product.Comments || [];
+
+    if (!comments.length) return "Немає оцінок";
+
+    const ratings = comments
+      .map((c) => c.rating || c.Rating)
+      .filter((r) => r !== undefined && r !== null);
+
+    if (!ratings.length) return "Немає оцінок";
+
+    const average =
+      ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+
+    return `⭐ ${average.toFixed(1)}`;
+  };
 
   return (
     <div className="layout-wrapper">
@@ -197,12 +221,27 @@ function Products() {
                     </div>
                     <div className="card-body">
                       <h3>{p.name || p.Name}</h3>
+
+                      <div className="product-card-info">
+                        <p>
+                          <span>Виробник:</span>{" "}
+                          {p.manufacturer || p.Manufacturer || "Не вказано"}
+                        </p>
+                        <p>
+                          <span>Об’єм:</span>{" "}
+                          {p.volume || p.Volume || "Не вказано"}
+                        </p>
+                        <p>
+                          <span>Категорія:</span>{" "}
+                          {getCategoryName(p.categoryId || p.CategoryId)}
+                        </p>
+                      </div>
                     </div>
                   </Link>
 
                   <div className="card-footer-wrapper">
                     <div className="card-footer">
-                      <span className="price">${p.price || p.Price}</span>
+                      <span className="price">₴{p.price || p.Price}</span>
                       {/* Перевірка залишку для відображення кнопки */}
                       {p.stockQuantity > 0 || p.StockQuantity > 0 ? (
                         <button

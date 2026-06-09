@@ -80,7 +80,6 @@ function ProductDetails() {
       </div>
     );
   if (!product) return null;
-  
 
   return (
     <div className="layout-wrapper">
@@ -139,7 +138,7 @@ function ProductDetails() {
                 <strong>Об'єм:</strong> {product.volume || "Не вказано"}
               </p>
             </div>
-            <p className="price-tag-blue">${product.price}</p>
+            <p className="price-tag-blue">₴{product.price}</p>
             <div className="product-description">
               <h3>Опис</h3>
               <p>{product.description}</p>
